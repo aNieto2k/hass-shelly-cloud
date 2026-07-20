@@ -239,24 +239,28 @@ class ShellyCloudDevice:
         settings: dict[str, Any],
     ) -> dict[str, list[ChannelInfo]]:
         result: dict[str, list[ChannelInfo]] = {}
-        # Discover channel kinds from both status and settings (settings can
-        # describe channels that are currently disabled on the device).
+        # Discover channel kinds from both status and settings. Only keys of
+        # the form ``kind:index`` represent addressable channels; top-level
+        # keys like ``sys``, ``wifi``, ``cloud``, ``mqtt``, ``ble``,
+        # ``devicepower``, ``em`` are device-wide state and must be skipped.
         candidates: set[str] = set()
-        for key in status:
-            if ":" in key:
-                candidates.add(key.split(":", 1)[0])
-        # Settings may have nested keys like 'switch:0' or be a list of ids.
-        for key in settings:
-            if ":" in key:
-                candidates.add(key.split(":", 1)[0])
+        for source in (status, settings):
+            for key in source:
+                if ":" in key:
+                    candidates.add(key.split(":", 1)[0])
 
         for kind in candidates:
-            indices = sorted(
-                {_safe_int(k.split(":", 1)[1]) for k in (*status, *settings)}
-                - {None}
-            )
+            indices: set[int] = set()
+            for source in (status, settings):
+                for key in source:
+                    if not key.startswith(f"{kind}:"):
+                        continue
+                    index = _safe_int(key.split(":", 1)[1])
+                    if index is not None:
+                        indices.add(index)
+
             channels: list[ChannelInfo] = []
-            for index in indices:
+            for index in sorted(indices):
                 state_key = f"{kind}:{index}"
                 ch = ChannelInfo(
                     kind=kind,
