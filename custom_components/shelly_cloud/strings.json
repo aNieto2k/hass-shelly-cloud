@@ -35,6 +35,7 @@
         "device_not_found": "No se encontró un dispositivo con ese ID en tu cuenta de Shelly.",
         "cannot_connect": "No se pudo conectar con el servidor de Shelly.",
         "invalid_auth": "El Authorization Cloud Key ya no es válido. Reconfigura la integración.",
+        "already_configured": "Este dispositivo ya está añadido a la integración.",
         "unknown": "Ha ocurrido un error inesperado."
       },
       "abort": {

@@ -187,18 +187,24 @@ class ShellyCloudDeviceSubentryFlow(ConfigSubentryFlow):
                     errors["base"] = "device_not_found"
                 else:
                     info = states[0]
-                    await self.async_set_unique_id(device_id)
-                    self._abort_if_unique_id_configured()
-
-                    return self.async_create_entry(
-                        title=info.get("code") or device_id,
-                        data={
-                            CONF_DEVICE_ID: device_id,
-                            CONF_DEVICE_CODE: info.get("code") or "",
-                            CONF_DEVICE_GEN: info.get("gen") or "G2",
-                            CONF_DEVICE_TYPE: info.get("type") or "",
-                        },
-                    )
+                    # Manual duplicate check: ConfigSubentryFlow does not
+                    # expose async_set_unique_id, so we look for an existing
+                    # subentry with the same device_id on the parent entry.
+                    for existing in self._get_entry().subentries.values():
+                        if existing.data.get(CONF_DEVICE_ID) == device_id:
+                            errors["base"] = "already_configured"
+                            break
+                    else:
+                        return self.async_create_entry(
+                            title=info.get("code") or device_id,
+                            data={
+                                CONF_DEVICE_ID: device_id,
+                                CONF_DEVICE_CODE: info.get("code") or "",
+                                CONF_DEVICE_GEN: info.get("gen") or "G2",
+                                CONF_DEVICE_TYPE: info.get("type") or "",
+                            },
+                            unique_id=device_id,
+                        )
 
         return self.async_show_form(
             step_id="user",
