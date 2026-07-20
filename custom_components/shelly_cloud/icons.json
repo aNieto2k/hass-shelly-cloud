@@ -1,0 +1,42 @@
+{
+  "switch": {
+    "default": {
+      "name": "Interruptor"
+    },
+    "switch": {
+      "name": "Interruptor"
+    }
+  },
+  "light": {
+    "default": {
+      "name": "Luz"
+    },
+    "light": {
+      "name": "Luz"
+    }
+  },
+  "cover": {
+    "default": {
+      "name": "Persiana"
+    },
+    "cover": {
+      "name": "Persiana"
+    }
+  },
+  "sensor": {
+    "power": {"name": "Potencia"},
+    "voltage": {"name": "Voltaje"},
+    "current": {"name": "Corriente"},
+    "energy": {"name": "Energía"},
+    "device_temperature": {"name": "Temperatura del dispositivo"},
+    "rssi": {"name": "RSSI"},
+    "uptime": {"name": "Tiempo en marcha"},
+    "ram_free": {"name": "RAM libre"}
+  },
+  "binary_sensor": {
+    "input": {"name": "Entrada"},
+    "cloud_connected": {"name": "Cloud conectado"},
+    "mqtt_connected": {"name": "MQTT conectado"},
+    "online": {"name": "En línea"}
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "services": {
+    "sync_devices": {
+      "name": "Sincronizar dispositivos",
+      "description": "Vuelve a sondear todos los dispositivos añadidos para refrescar su estado.",
+      "fields": {
+        "config_entry_id": {
+          "name": "Config entry",
+          "description": "Integración de Shelly Cloud a sincronizar.",
+          "required": true,
+          "selector": {
+            "config_entry": {
+              "domain": "shelly_cloud"
+            }
+          }
+        }
+      }
+    }
+  }
+}
