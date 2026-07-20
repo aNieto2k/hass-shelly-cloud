@@ -25,6 +25,23 @@ Designed for users who cannot (or do not want to) reach their Shelly devices on 
 
 Copy `custom_components/shelly_cloud/` into your Home Assistant `config/custom_components/` directory and restart.
 
+## Publishing a new release
+
+To make a new version available through HACS, create a GitHub release whose tag matches the `version` field in `manifest.json`:
+
+```bash
+# After your changes
+git add .
+git commit -m "release: 0.2.0"
+git tag 0.2.0                # tag must match manifest.json version
+git push origin main
+git push origin 0.2.0
+```
+
+Then in GitHub: **Releases → Draft a new release → choose tag `0.2.0`** → publish. HACS will pick up the new release automatically.
+
+> The tag must **not** have a `v` prefix. The tag `0.2.0` is correct, `v0.2.0` will not be detected.
+
 ## Configuration
 
 ### 1. Get your credentials
