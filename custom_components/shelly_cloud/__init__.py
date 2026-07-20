@@ -11,7 +11,7 @@ from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 
 from .api import ShellyCloudApiClient, ShellyCloudAuthError, ShellyCloudError
-from .const import CONF_AUTH_KEY, CONF_DEVICE_ID, CONF_SERVER_URL, DOMAIN
+from .const import CONF_AUTH_KEY, CONF_DEVICE_ID, CONF_SERVER_URL
 from .coordinator import ShellyCloudCoordinator
 
 _LOGGER = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ type ShellyCloudConfigEntry = ConfigEntry["ShellyCloudRuntimeData"]
 
 
 class ShellyCloudRuntimeData:
-    """Per-entry runtime data stored in ``hass.data[DOMAIN][entry_id]``."""
+    """Per-entry runtime data stored in ``entry.runtime_data``."""
 
     def __init__(
         self,
@@ -51,7 +51,12 @@ def _device_ids_for_entry(entry: ConfigEntry) -> list[str]:
 async def async_setup_entry(
     hass: HomeAssistant, entry: ShellyCloudConfigEntry
 ) -> bool:
-    """Set up Shelly Cloud from a config entry."""
+    """Set up Shelly Cloud from a config entry.
+
+    Note: when a subentry is added or removed, HA itself triggers a reload of
+    this entry, so the new device list is picked up automatically on the next
+    call to this function.
+    """
     session = async_get_clientsession(hass)
     client = ShellyCloudApiClient(
         server_url=entry.data[CONF_SERVER_URL],
@@ -77,16 +82,6 @@ async def async_setup_entry(
 
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
 
-    async def _on_subentry_change(
-        _hass: HomeAssistant,
-        _entry: ConfigEntry,
-        _subentry: ConfigSubentry,
-    ) -> None:
-        """Reload the entry when a device subentry is added / removed."""
-        await hass.config_entries.async_reload(_entry.entry_id)
-
-    entry.async_on_unload(entry.add_subentry_update_listener(_on_subentry_change))
-
     return True
 
 
@@ -102,7 +97,11 @@ async def async_remove_subentry(
     entry: ConfigEntry,
     subentry: ConfigSubentry,
 ) -> None:
-    """Clean up when a subentry is removed (best-effort)."""
+    """Clean up cached device state when a subentry is removed.
+
+    HA will then call ``async_setup_entry`` again to recreate the platforms
+    with the now-smaller subentry list.
+    """
     runtime = getattr(entry, "runtime_data", None)
     if runtime and subentry.data.get(CONF_DEVICE_ID):
         runtime.coordinator.remove_device(subentry.data[CONF_DEVICE_ID])
