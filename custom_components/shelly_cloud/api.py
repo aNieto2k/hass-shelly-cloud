@@ -73,21 +73,31 @@ class ShellyCloudApiClient:
 
         Uses the v1 ``/device/all_status`` endpoint because it requires no
         device id and exposes the full account, so we get both a connectivity
-        test and an auth check in one call.
+        test and an auth check in one call. Auth key is passed in the query
+        string — without it the cloud returns 401 even though the docs don't
+        mention it for this particular endpoint.
         """
         result = await self._request(
-            "GET",
+            "POST",
             "/device/all_status",
-            params={"show_info": "true", "no_shared": "true"},
+            params={
+                "auth_key": self._auth_key,
+                "show_info": "true",
+                "no_shared": "true",
+            },
         )
         return bool(result.get("isok"))
 
     async def async_list_devices_v1(self) -> dict[str, dict[str, Any]]:
         """Return ``{device_id: _dev_info}`` for every device on the account."""
         payload = await self._request(
-            "GET",
+            "POST",
             "/device/all_status",
-            params={"show_info": "true", "no_shared": "true"},
+            params={
+                "auth_key": self._auth_key,
+                "show_info": "true",
+                "no_shared": "true",
+            },
         )
         devices_status = payload.get("data", {}).get("devices_status", {})
         result: dict[str, dict[str, Any]] = {}
@@ -324,8 +334,16 @@ class ShellyCloudApiClient:
                     timeout=timeout,
                 ) as response:
                     if response.status == 401 or response.status == 403:
+                        body_preview = (await response.text())[:200]
+                        _LOGGER.debug(
+                            "Auth rejected on %s %s (status=%s, body=%s)",
+                            method,
+                            path,
+                            response.status,
+                            body_preview,
+                        )
                         raise ShellyCloudAuthError(
-                            f"Auth rejected ({response.status})"
+                            f"Auth rejected ({response.status}) on {method} {path}"
                         )
                     if response.status == 404 and "device" in path.lower():
                         raise ShellyCloudDeviceNotFound(path)
