@@ -1,7 +1,7 @@
 {
   "domain": "shelly_cloud",
   "name": "Shelly Cloud",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "config_flow": true,
   "documentation": "https://github.com/aNieto2k/hass-shelly-cloud",
   "issue_tracker": "https://github.com/aNieto2k/hass-shelly-cloud/issues",
